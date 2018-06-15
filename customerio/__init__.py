@@ -1,3 +1,8 @@
+# https://github.com/customerio/customerio-python
+# Customized to use a dict instead of kwargs for 'data'
+# Previously when using kwargs data could not contain an argument named 'name'
+# Example: {"product_id":452218,"po_status":"backordered","sku":"6G9-1571Y-40-00","name":"Caution Mark"}
+# This should only be used as a stopgap until we can install a working package directly through pip
 from __future__ import division
 from datetime import datetime
 import math
@@ -21,7 +26,8 @@ class CustomerIOException(Exception):
 
 class CustomerIO(object):
 
-    def __init__(self, site_id=None, api_key=None, host=None, port=None, url_prefix=None, json_encoder=None, retries=3, timeout=10, backoff_factor=0.02):
+    def __init__(self, site_id=None, api_key=None, host=None, port=None, url_prefix=None, json_encoder=None,
+                 retries=3, timeout=10, backoff_factor=0.02):
         self.site_id = site_id
         self.api_key = api_key
         self.host = host or 'track.customer.io'
@@ -94,7 +100,7 @@ Last caught exception -- {klass}: {message}
         url = self.get_customer_query_string(id)
         self.send_request('PUT', url, kwargs)
 
-    def track(self, customer_id, name, **data):
+    def track(self, customer_id, name, data):
         '''Track an event for a given customer_id'''
         url = self.get_event_query_string(customer_id)
         post_data = {
@@ -103,7 +109,7 @@ Last caught exception -- {klass}: {message}
         }
         self.send_request('POST', url, post_data)
 
-    def pageview(self, customer_id, page, **data):
+    def pageview(self, customer_id, page, data):
         '''Track a pageview for a given customer_id'''
         url = self.get_event_query_string(customer_id)
         post_data = {
@@ -113,7 +119,7 @@ Last caught exception -- {klass}: {message}
         }
         self.send_request('POST', url, post_data)
 
-    def backfill(self, customer_id, name, timestamp, **data):
+    def backfill(self, customer_id, name, timestamp, data):
         '''Backfill an event (track with timestamp) for a given customer_id'''
         url = self.get_event_query_string(customer_id)
 
@@ -138,14 +144,14 @@ Last caught exception -- {klass}: {message}
         url = self.get_customer_query_string(customer_id)
         self.send_request('DELETE', url, {})
 
-    def add_device(self, customer_id, device_id, platform, **data):
+    def add_device(self, customer_id, device_id, platform, data):
         '''Add a device to a customer profile'''
         if not customer_id:
             raise CustomerIOException("customer_id cannot be blank in add_device")
-        
+
         if not device_id:
             raise CustomerIOException("device_id cannot be blank in add_device")
-        
+
         if not platform:
             raise CustomerIOException("platform cannot be blank in add_device")
 
@@ -168,7 +174,7 @@ Last caught exception -- {klass}: {message}
             raise CustomerIOException("customer_id cannot be blank in suppress")
 
         self.send_request('POST', '{base}/customers/{id}/suppress'.format(base=self.base_url, id=customer_id), {})
-    
+
     def unsuppress(self, customer_id):
         if not customer_id:
             raise CustomerIOException("customer_id cannot be blank in unsuppress")
